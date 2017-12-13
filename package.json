@@ -1,0 +1,21 @@
+{
+  "name": "object-traverser",
+  "version": "1.0.0",
+  "description": "Object searching and traversing",
+  "main": "object-traverser.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    
+  },
+  "dependencies": {
+    "js-functions": "git+https://github.com/goldingdamien/js-functions.git"
+  },
+  "devDependencies": {
+    "chai": "^4.1.0",
+    "mocha": "^3.4.2"
+  },
+  "author": "Damien Golding",
+  "license": "MIT"
+}
