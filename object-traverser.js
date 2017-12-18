@@ -4,17 +4,23 @@ const {Utility, BaseObjectHelper, BaseArrayHelper} = require('js-functions');
  * Set of functions for searching and traversing objects.
  */
 class ObjectTraverser{
-    
+
+      /**
+       * Gets obj values as simple key value pairs.
+       * Example: {a: {b: 2}, c: 1} => {a_b: 2, c: 1}
+       * 
+       * Formats:
+       * 1. camelCase
+       * 2. [DELIMITER KEY]
+       * 
+       * @param {Object} obj
+       * @param {String} format
+       * @param {Array} curPath
+       * @param {Boolean} useSimpleKeys
+       * @return {Array}
+       */
       static getKeyedData(obj, format, curPath, useSimpleKeys){
-        /*
-        Gets obj values as simple key value pairs.
-        Example: {a: {b: 2}, c: 1} => {a_b: 2, c: 1}
         
-        Formats:
-        1. camelCase
-        2. [DELIMITER KEY]
-        */
-      
         var keys = {};
         var curKeys;
         var arr;
@@ -45,7 +51,7 @@ class ObjectTraverser{
         for(var key in obj){
           if(BaseObjectHelper.isObject(obj[key])){
             curPath.push(key);
-            curKeys = ObjectSearcher.getKeyedData(obj[key], format, curPath, useSimpleKeys);
+            curKeys = ObjectTraverser.getKeyedData(obj[key], format, curPath, useSimpleKeys);
             curPath.pop();
           }else{
             curKeys = {};
@@ -61,13 +67,33 @@ class ObjectTraverser{
         return keys;
       }
     
-      static inRecursion(curObj, parents){//array of parent objects
+      /**
+       * Used for checking if in recursion.
+       * Pass object + array of looped items to use.
+       * 
+       * @param {Object} curObj 
+       * @param {Array} parents array of parent objects
+       * @return {Boolean}
+       */
+      static inRecursion(curObj, parents){
         return Utility.dataInArray(curObj, parents);
       }
     
+      /**
+       * Loops object by passing handle that returns value
+       * DEPRECATED: Use loopObjectComplex instead. Too many future problems arise without status object.
+       * 
+       * @param {Object} obj 
+       * @param {Function} onItem
+       * onItem: function(obj, key, val){
+       *  //Change val here. Use isObject(val) if only handling non-objects.
+       *  return val;
+       * }
+       * @param {Array} looped array of checked items to avoid circular object error.
+       * @return {Object} Same object 
+       */
       static loopObject(obj, onItem, looped){
         /*
-        DEPRECATED: Use loopObjectComplex instead. Too many future problems arise without status object.
         onItem: function(obj, key, val){
           //Change val here. Use isObject(val) if only handling non-objects.
           return val;
@@ -88,7 +114,7 @@ class ObjectTraverser{
           if( BaseObjectHelper.isNonDomObject(obj[key])){
             
             if(!Utility.dataInArray(obj[key], looped)){
-                ObjectSearcher.loopObject(obj[key], onItem, looped);
+                ObjectTraverser.loopObject(obj[key], onItem, looped);
             }else{
               //IGNORE
             }
@@ -104,13 +130,18 @@ class ObjectTraverser{
         return obj;
       }
     
+      /**
+       * Complex version of looping object.
+       * Passes on all possible data in status object.
+       * Will be slower than simple looping object function.
+       * Also handles objects in onItem.
+       *  
+       * @param {Object} obj 
+       * @param {Function} onItem 
+       * @param {Object} status See status in code.
+       * @return {Object} Same object
+       */
       static loopObjectComplex(obj, onItem, status){
-        /*
-        Complex version of looping object.
-        Passes on all possible data in status object.
-        Will be slower than simple looping object function.
-        Also handles objects in onItem.
-        */
         
         if(!status){
           status = {
@@ -174,8 +205,8 @@ class ObjectTraverser{
           if( BaseObjectHelper.isNonDomObject(obj[key]) ){
             
             //if(!dataInArray(obj[key], status.looped)){//This will cause bugs if the same data exists. Changed to checking recursion via parents.
-            if(!ObjectSearcher.inRecursion(status.value, status.parents)){
-              ObjectSearcher.loopObjectComplex(obj[key], onItem, status);
+            if(!ObjectTraverser.inRecursion(status.value, status.parents)){
+              ObjectTraverser.loopObjectComplex(obj[key], onItem, status);
             }else{
               //IGNORE
             }
@@ -215,9 +246,16 @@ class ObjectTraverser{
         return obj;
       }
       
+      /**
+       * Deeply loops object looking for value of key.
+       * 
+       * @param {Object} obj 
+       * @param {*} key 
+       * @return {*} value
+       */
       static getKeyValueFromObject(obj, key){
         var value = null;
-        ObjectSearcher.loopObjectComplex(obj, function(status){
+        ObjectTraverser.loopObjectComplex(obj, function(status){
           if(status.key === key){
             value = status.value;
             status.exit = true;
@@ -227,6 +265,14 @@ class ObjectTraverser{
         return value;
       }
     
+      /**
+       * Gets data by path level
+       * 
+       * @param {Object} obj 
+       * @param {Number} level 
+       * @param {Object} options See in code.
+       * @return {*} returned data
+       */
       static getDataByPathLevel(obj, level, options){
         //level = path length
         if(!options){
@@ -237,7 +283,7 @@ class ObjectTraverser{
         }
         
         var returnData = [];
-        ObjectSearcher.loopObjectComplex(obj, function(status){
+        ObjectTraverser.loopObjectComplex(obj, function(status){
           if(status.level === level){
             if(options.condition && !options.condition(status.value)){return false;}
             
@@ -252,24 +298,47 @@ class ObjectTraverser{
         return returnData;
       }
     
+      /**
+       * Deeply copies object.
+       * 
+       * @param {Object} obj 
+       * @return {Object} copied object
+       */
       static deepCopyObject(obj){//??Needs test
         var copy = {};
-        ObjectSearcher.loopObjectComplex(obj, function(status){
-            BaseObjectHelper.setObjectValue(copy, status.path, status.value);
+        ObjectTraverser.loopObjectComplex(obj, function(status){
+            ObjectTraverser.setObjectValue(copy, status.path, status.value);
         });
+
+        return copy;
       }
     
+      /**
+       * Object helper function for generating data for object.
+       * Can be used for tests where the format is known but the data can be anything.
+       * 
+       * @param {Object} obj 
+       * @return {Object}
+       */
       static populateObjectWithTestData(obj){
         //obj assumed to have keys with no meaningful values
         var i=0;
-        return ObjectSearcher.loopObjectComplex(obj, function(status){
+        return ObjectTraverser.loopObjectComplex(obj, function(status){
           status.returnValue = "Test value(" + status.key + " " + i + ")";
           i++;
         });
       }
 
-      static getObjectValue(obj, pathArr, defaultValue){
-        var last = BaseObjectHelper.traverseObjectPath(obj, pathArr);
+      /**
+       * Gets object by path
+       * 
+       * @param {Object} obj Passed in object
+       * @param {Array} pathArr Array path(does not include object or value)
+       * @param {*} defaultValue Optional default value to use if can not find
+       * @return {*}
+       */
+      static getObjectValue(obj, pathArr, defaultValue=null){
+        var last = ObjectTraverser.traverseObjectPath(obj, pathArr);
         if(last === null && arguments.length === 3){//defaultValue handling
           return defaultValue;
         }else{
@@ -277,14 +346,29 @@ class ObjectTraverser{
         }
       }
       
+      /**
+       * Sets value to object by following path
+       * 
+       * @param {Object} obj 
+       * @param {Array} pathArr 
+       * @param {*} val 
+       */
       static setObjectValue(obj, pathArr, val){
         var onLast = function(curObj, curKey, curVal){
           curObj[curKey] = val;
           return true;
         };
-        return BaseObjectHelper.traverseObjectPath(obj, pathArr, onLast);
+        return ObjectTraverser.traverseObjectPath(obj, pathArr, onLast);
       }
       
+      /**
+       * Traverses path of object
+       * 
+       * @param {Object} obj 
+       * @param {Array} pathArr 
+       * @param {Function} onLast Executed on last in path 
+       * @return {*} return value of onLast function
+       */
       static traverseObjectPath(obj, pathArr, onLast){
         var curObj = obj;
         var curVal;

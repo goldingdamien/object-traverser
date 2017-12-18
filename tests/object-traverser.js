@@ -109,6 +109,5 @@ describe('object-traverser.js', function(){
             expect(val["again"]).to.equal(5);//simple
           });
         });
-        
       });
 });
