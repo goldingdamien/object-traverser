@@ -1,4 +1,5 @@
-var expect = require('chai').expect;
+const chai = require('chai');
+const {expect} = chai;
 
 const ObjectTraverser = require('../object-traverser');
 

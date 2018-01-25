@@ -122,7 +122,7 @@ class ObjectTraverser{
           
           //Handle
           returnValue = onItem(obj, key, obj[key]);
-          if(!equals(returnValue, obj[key])){
+          if(!Utility.equals(returnValue, obj[key])){
             obj[key] = returnValue;
           }
         }
@@ -180,7 +180,7 @@ class ObjectTraverser{
         //keys = Object.keys(obj);//Problem getting keys in proto.
         keys = BaseObjectHelper.getObjectKeys(obj);
         while(i < keys.length){
-          key = keys[i];
+          let key = keys[i];
           
           //Duplicate checking
           if(checkedKeys.indexOf(key) >= 0){
@@ -226,7 +226,7 @@ class ObjectTraverser{
             }
             
             //Value changing
-            else if(!equals(status.value, status.returnValue)){
+            else if(!Utility.equals(status.value, status.returnValue)){
               obj[key] = status.returnValue;
             }
           }

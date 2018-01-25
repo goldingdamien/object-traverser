@@ -7,14 +7,24 @@
     "test": "tests"
   },
   "scripts": {
-    
+    "test": "nyc --reporter=html mocha ./tests/*.js && npm run esdoc && npm run eslint",
+    "test-only": "mocha ./tests/*.js",
+    "esdoc": "./node_modules/.bin/esdoc -c ./.esdoc.json",
+    "eslint": "gulp eslint"
   },
   "dependencies": {
     "js-functions": "git+https://github.com/goldingdamien/js-functions.git"
   },
   "devDependencies": {
     "chai": "^4.1.0",
-    "mocha": "^3.4.2"
+    "esdoc": "^1.0.4",
+    "esdoc-standard-plugin": "^1.0.0",
+    "eslint": "^4.13.1",
+    "eslint-html-reporter": "^0.5.2",
+    "gulp": "^3.9.1",
+    "gulp-eslint": "^4.0.0",
+    "mocha": "^3.4.2",
+    "nyc": "^11.3.0"
   },
   "author": "Damien Golding",
   "license": "MIT"
