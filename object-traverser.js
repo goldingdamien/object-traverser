@@ -254,7 +254,7 @@ class ObjectTraverser{
        * @param {Object} obj 
        * @return {Object}
        */
-      getLastValues(obj){
+      static getLastValues(obj){
         var lastValues = {};
 
         ObjectTraverser.loopObjectComplex(obj, function(status){
