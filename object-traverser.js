@@ -245,6 +245,26 @@ class ObjectTraverser{
         
         return obj;
       }
+
+      /**
+       * Loops object and gets last values.
+       * Most other libraries have flatten but returns long keys.
+       * Will overwrite any repeated keys so should make sure to use only when no duplicates.
+       * 
+       * @param {Object} obj 
+       * @return {Object}
+       */
+      getLastValues(obj){
+        var lastValues = {};
+
+        ObjectTraverser.loopObjectComplex(obj, function(status){
+          if(typeof status !== 'object'){
+            lastValues[status.key] = status.value;
+          }
+        });
+
+        return lastValues;
+      }
       
       /**
        * Deeply loops object looking for value of key.
