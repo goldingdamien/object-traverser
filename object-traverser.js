@@ -258,7 +258,7 @@ class ObjectTraverser{
         var lastValues = {};
 
         ObjectTraverser.loopObjectComplex(obj, function(status){
-          if(typeof status !== 'object'){
+          if(typeof status.value !== 'object'){
             lastValues[status.key] = status.value;
           }
         });
