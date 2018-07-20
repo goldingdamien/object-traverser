@@ -4,6 +4,7 @@ const {expect} = chai;
 const ObjectTraverser = require('../object-traverser');
 
 describe('object-traverser.js', function(){
+
     describe("#Traversing", function(){
         
         var obj = {
@@ -63,6 +64,30 @@ describe('object-traverser.js', function(){
             ObjectTraverser.setObjectValue(obj, objPath, 4); expect(obj.a.c.a.obj).to.equal(4);
             ObjectTraverser.setObjectValue(obj, arrPath, 4); expect(obj.a.c.b[2].arr).to.equal(4);
           });
+        
+          it('Sets value to object when all path levels exist', function(){
+            var obj = {
+              a: {
+                b: {
+                  c: {
+                    d: 1
+                  }
+                }
+              }
+            };
+            ObjectTraverser.setObjectValue(obj, ['a', 'b', 'c', 'd'], 2);
+            expect(obj.a.b.c.d).to.equal(2);
+          });
+
+          it('Sets value to object even if path levels do not exist', function(){
+            var obj = {
+              a: {aa: 1}
+            };
+            ObjectTraverser.setObjectValue(obj, ['a', 'b', 'c', 'd'], 2);
+            expect(obj.a.b.c.d).to.equal(2);
+            expect(obj.a.aa).to.equal(1);
+          });
+
         });
         
         describe('#loopObject()', function() {
@@ -110,5 +135,8 @@ describe('object-traverser.js', function(){
             expect(val["again"]).to.equal(5);//simple
           });
         });
+
       });
+
+
 });

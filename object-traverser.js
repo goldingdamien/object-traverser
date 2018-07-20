@@ -378,7 +378,15 @@ class ObjectTraverser{
           curObj[curKey] = val;
           return true;
         };
-        return ObjectTraverser.traverseObjectPath(obj, pathArr, onLast);
+        var onItem = function(curObj, curKey){//Create if doesn't exist.
+          if(curObj[curKey] === undefined){
+            curObj[curKey] = {};//Overridden by onLast on last item.
+          }
+        };
+        return ObjectTraverser.traverseObjectPath(obj, pathArr, {
+          onLast: onLast,
+          onItem: onItem
+        });
       }
       
       /**
@@ -386,22 +394,42 @@ class ObjectTraverser{
        * 
        * @param {Object} obj 
        * @param {Array} pathArr 
-       * @param {Function} onLast Executed on last in path 
+       * @param {Object|Function} options DEPRECATED: onLast function.
        * @return {*} return value of onLast function
        */
-      static traverseObjectPath(obj, pathArr, onLast){
+      static traverseObjectPath(obj, pathArr, options){
+
+        if(typeof options === 'function'){
+          options = {
+            onLast: options
+          };
+        }else if(typeof options !== 'object'){
+          options = {};
+        }
+        var onLast = options.onLast;//Executed on last in path
+        var onItem = options.onItem;
+
         var curObj = obj;
         var curVal;
         var defaultVal = null;
         var returnVal = defaultVal;
         for(var i=0; i<pathArr.length; i++){
           
+          if(onItem){
+            onItem(curObj, pathArr[i]);
+          }
+
+          //Valid value
           if(BaseObjectHelper.isObject(curObj) && Object.keys(curObj).indexOf(pathArr[i]) >= 0){
             curVal = curObj[ pathArr[i] ];
-          }else{
+          }
+          
+          //Default value
+          else{
             curVal = defaultVal;
           }
           
+          //Last item
           if(i+1 === pathArr.length){  
             if(onLast){
               returnVal = onLast(curObj, pathArr[i], curVal);
@@ -410,6 +438,7 @@ class ObjectTraverser{
             }
           }
           
+          //Non-last item
           else{
             curObj = curVal;
           }
