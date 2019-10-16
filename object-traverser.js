@@ -138,10 +138,10 @@ class ObjectTraverser{
        *  
        * @param {Object} obj 
        * @param {Function} onItem 
-       * @param {Object} status See status in code.
+       * @param {Object|undefined} status See status in code.
        * @return {Object} Same object
        */
-      static loopObjectComplex(obj, onItem, status){
+      static loopObjectComplex(obj, onItem, status = undefined){
         
         if(!status){
           status = {
