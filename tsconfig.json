@@ -2,17 +2,18 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
-    "strictNullChecks": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "outDir": "./dist",
     "target": "es6",
-    "noImplicitAny": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "strict": false,
+    "strictNullChecks": false,
+    "forceConsistentCasingInFileNames": false,
     "importHelpers": true,
     "removeComments": true,
     "noEmit": true,
+    "noEmitOnError": true,
     "declaration": true
   },
   "include": [

@@ -1,7 +1,7 @@
 const { Utility, BaseObjectHelper, BaseArrayHelper } = require('js-functions')
 
 /**
- * @typedef {object} LoopStatus
+ * @typedef {Object<string, *>} LoopStatus
  * @property {object} firstObject
  * @property {object[]} looped
  * @property {object[]} parents
@@ -19,6 +19,16 @@ const { Utility, BaseObjectHelper, BaseArrayHelper } = require('js-functions')
  * @typedef {object} PathLevelOptions
  * @property {function|null} condition
  * @property {boolean} objectKeys
+ */
+
+/**
+ * @typedef {Object<string, *>} Dictionary
+ */
+
+/**
+ * @typedef {Object<string, *>} PathOptions
+ * @property {function} [onLast]
+ * @property {function} [onItem]
  */
 
 /**
@@ -55,8 +65,8 @@ class ObjectTraverser {
 
         // Handle
         /**
-         * @param {object} obj
-         * @param {array} arr
+         * @param {Dictionary} obj
+         * @param {string[]} arr
          * @param {*} val
          * @return {object}
          */
@@ -86,7 +96,7 @@ class ObjectTraverser {
                 curPath.pop()
             } else {
                 curKeys = {}
-                arr = [].concat(curPath)
+                arr = [...curPath]
                 arr.push(key)
                 setKeys(curKeys, arr, obj[key])
             }
@@ -125,11 +135,11 @@ class ObjectTraverser {
      */
     static loopObject(obj, onItem, looped = []) {
         /*
-                                        onItem: function(obj, key, val){
-                                          //Change val here. Use isObject(val) if only handling non-objects.
-                                          return val;
-                                        }
-                                        */
+                                                    onItem: function(obj, key, val){
+                                                      //Change val here. Use isObject(val) if only handling non-objects.
+                                                      return val;
+                                                    }
+                                                    */
 
         // Prevents cyclic reference infinite looping
         if (!looped) {
@@ -161,13 +171,16 @@ class ObjectTraverser {
 
     /**
      * @param {object} obj
-     * @param {object} status // TODO: Partial<LoopStatus>.
+     * @param {Object<string,*>} status // TODO: Partial<LoopStatus>.
      * @return {LoopStatus}
      */
     static initializeLoopStatus(obj, status = {}) {
         if (typeof status !== 'object') {
             status = {}
         }
+        /**
+         * @type {LoopStatus}
+         */
         const loopStatus = {
             firstObject: obj,
             looped: [],
@@ -186,7 +199,9 @@ class ObjectTraverser {
             exit: false // Exits loop
         }
         for (let key in status) {
-            loopStatus[key] = status[key]
+            if (loopStatus[key] !== undefined) {
+                loopStatus[key] = status[key]
+            }
         }
         return loopStatus
     }
@@ -216,11 +231,16 @@ class ObjectTraverser {
         status.parents.push(status.object)
 
         var i = 0
-        var keys = []
+            /**
+             * @type {string[]}
+             */
         var checkedKeys = []
             // Using keys array makes it possible to update keys dynamically.
             // keys = Object.keys(obj);//Problem getting keys in proto.
-        keys = BaseObjectHelper.getObjectKeys(obj)
+            /**
+             * @type {string[]}
+             */
+        var keys = BaseObjectHelper.getObjectKeys(obj)
         while (i < keys.length) {
             let key = keys[i]
 
@@ -262,10 +282,7 @@ class ObjectTraverser {
                 // Deleting
                 if (status.delete) {
                     delete obj[key]
-                }
-
-                // Value changing
-                else if (!Utility.equals(status.value, status.returnValue)) {
+                } else if (!Utility.equals(status.value, status.returnValue)) { // Value changing
                     obj[key] = status.returnValue
                 }
             }
@@ -347,6 +364,9 @@ class ObjectTraverser {
             }
         }
 
+        /**
+         * @type {object}
+         */
         var returnData = []
         ObjectTraverser.loopObjectComplex(obj, function(status) {
             if (status.level === level) {
@@ -422,10 +442,9 @@ class ObjectTraverser {
         /**
          * @param {object} curObj
          * @param {string} curKey
-         * @param {*} curVal
          * @return {true}
          */
-        var onLast = function(curObj, curKey, curVal) {
+        var onLast = function(curObj, curKey) {
                 curObj[curKey] = val
                 return true
             }
@@ -449,15 +468,21 @@ class ObjectTraverser {
      *
      * @param {Object} obj
      * @param {Array} pathArr
-     * @param {Object|Function} options DEPRECATED: onLast function.
+     * @param {PathOptions|Function|undefined} options DEPRECATED: onLast function.
      * @return {*} return value of onLast function
      */
     static traverseObjectPath(obj, pathArr, options = undefined) {
         if (typeof options === 'function') {
+            /**
+             * @type {PathOptions}
+             */
             options = {
                 onLast: options
             }
         } else if (typeof options !== 'object') {
+            /**
+             * @type {PathOptions}
+             */
             options = {}
         }
         var onLast = options.onLast // Executed on last in path
@@ -465,8 +490,11 @@ class ObjectTraverser {
 
         var curObj = obj
         var curVal
-        var defaultVal = null
-        var returnVal = defaultVal
+        var DEFAULT_VALUE = null
+            /**
+             * @type {*}
+             */
+        var returnVal = DEFAULT_VALUE
         for (var i = 0; i < pathArr.length; i++) {
             if (onItem) {
                 onItem(curObj, pathArr[i])
@@ -475,11 +503,8 @@ class ObjectTraverser {
             // Valid value
             if (BaseObjectHelper.isObject(curObj) && Object.keys(curObj).indexOf(pathArr[i]) >= 0) {
                 curVal = curObj[pathArr[i]]
-            }
-
-            // Default value
-            else {
-                curVal = defaultVal
+            } else { // Default value
+                curVal = DEFAULT_VALUE
             }
 
             // Last item
@@ -489,10 +514,7 @@ class ObjectTraverser {
                 } else {
                     returnVal = curVal
                 }
-            }
-
-            // Non-last item
-            else {
+            } else { // Non-last item
                 curObj = curVal
             }
         }
