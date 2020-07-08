@@ -28,5 +28,6 @@
     "nyc": "^11.3.0"
   },
   "author": "Damien Golding",
-  "license": "MIT"
+  "license": "MIT",
+  "types": "./declarations/object-traverser.d.ts"
 }
